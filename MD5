@@ -1,0 +1,15 @@
+cc44a197aa1c6cd46f46774393de8a12 *DESCRIPTION
+072dd848c15fad486ec64e00bf585f54 *NAMESPACE
+8b8a663e825152582d6a5140aacf8105 *R/HDIofMCMC.R
+f11f128afee44082d34f9cbe0fd1d12b *R/bayesrs-data.R
+3fb2dfb65f825c91354cab6b7242b308 *R/hello.R
+caef5d07365a2204516ab2c1e63ff364 *R/modelrun.R
+7763d3c39adbdb5493f22fece64b74c6 *R/modeltext.R
+388d61422c422ef68c18eb23ca6d964b *R/plotPostMT_HDImeans2.R
+5d8af415bffd0489540cebff79443ce9 *build/vignette.rds
+818fd4f06fa1d4fd86e8b1aff5ddc2b0 *data/bayesrsdata.rda
+9a3d91fa157c69008407f23db61abc25 *inst/doc/BayesRS_overview.pdf
+5c2be5c72e78e92f57b6f40a699234d9 *inst/doc/BayesRS_overview.pdf.asis
+5386a8cd97117d987871812a0417988f *man/bayesrsdata.Rd
+01a697627601722b0bd1fd6b2fc6a2fc *man/modelrun.Rd
+5c2be5c72e78e92f57b6f40a699234d9 *vignettes/BayesRS_overview.pdf.asis
