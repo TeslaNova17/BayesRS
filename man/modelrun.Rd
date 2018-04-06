@@ -55,7 +55,9 @@ Bayes Factors are computed with the Savage-Dickey density ratio. We use the norm
 }
 }
 \examples{
+
 data(bayesrsdata) #load data
+
 \dontshow{
 ## JAGS Sampler Settings
 # -----------------
@@ -134,7 +136,9 @@ out <- modelrun(data = bayesrsdata,
 bf <- out[[1]]
 bf
 }
+
 \donttest{
+
 ## -----------------------------------------------------------------
 ## Example 1: Estimation of Bayes Factors from a continuous
 ## independent variable (IV) with random slopes

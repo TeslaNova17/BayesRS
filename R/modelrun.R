@@ -57,6 +57,11 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
   if (is.null(plot.post)) plot.post=0
   if (is.null(dic)) dic=0
   if (is.null(path)) path=file.path(tempdir(), "model.txt")
+  if (!is.null(randvar.ia)){
+    if(nrow(randvar.ia[[1]])!=nrow(dat.str)|ncol(randvar.ia[[1]])!=nrow(dat.str)){
+      stop("nr. of independent variables in dat.str and randvar.ia have to match")
+    }
+  }
   ls<-0
   ncont<-sum(dat.str$type=="cont")
   # coding for cat vars when levels(cat)>2
@@ -309,7 +314,6 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
                              n.iter=nPerChain , thin=thinSteps)
   mcmcChain <- as.matrix(codaSamples)
   mcmcdf <- as.data.frame(mcmcChain)
-
   #### convergence diagnostics ####
   if (checkconv == 1){
     # diagnostics look good
@@ -363,20 +367,24 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
       }
 
       # and plot mus not in mu.corr df
+
       if(any(parameters[["pl.ind"]])){
         ind <- which(parameters[["pl.ind"]]==1)
         show <- c(contnames, catnames)[ind]
         pl.ind <- grep(paste0("\\bmu",show, "\\b",collapse="|"),
                        names(mcmcdf))
         cycle <- ceiling(x = length(pl.ind)/4)
-        for (i in 1:cycle){
-          ind <- c(pl.ind[((i-1)*4+1):(i*4)])
-          if (any(is.na(ind))){
-            ind <- ind[1:(min(which(is.na(ind)))-1)]
+        if(cycle!=0){
+          for (i in 1:cycle){
+            ind <- c(pl.ind[((i-1)*4+1):(i*4)])
+            if (any(is.na(ind))){
+              ind <- ind[1:(min(which(is.na(ind)))-1)]
+            }
+            plot(codaSamples[,ind])
           }
-          plot(codaSamples[,ind])
         }
-      }}
+      }
+    }
     if(length(parameters[["pl.nhcl"]])>0){
       show <- parameters[["pl.nhcl"]]
       cycle <- ceiling(x = length(show)/4)
@@ -405,12 +413,14 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
     # dnorm approach to compute bfs
     counter <- 1
     pl.cont <- contnames[parameters[["pl.ind"]][1:nrcont]]
+    # check that mus are not in correlation structure
     if (any(!is.na(pl.cont))) {
       for (i in pl.cont){
-        bf <- c(bf,dt.scaled(0,1,0,scalecont)/(dnorm(0, mean(b_post[,paste0("mu",i)]), sd(b_post[,paste0("mu",i)]))+1e-300))
-        bf.names<-c(bf.names,i)
-        # bf <- c(bf,dt.scaled(0,1,0,scalecont)/(dnorm(0, mean(b_post[,paste0("mu",pl.cont)]), sd(b_post[,paste0("mu",pl.cont)]))+1e-300))
-        counter <- counter + 1
+        if(length(grep(paste0("\\bmu",i,"\\b"),names(b_post),value = TRUE))>0){
+          bf <- c(bf,dt.scaled(0,1,0,scalecont)/(dnorm(0, mean(b_post[,paste0("mu",i)]), sd(b_post[,paste0("mu",i)]))+1e-300))
+          bf.names<-c(bf.names,i)
+          counter <- counter + 1
+        }
       }
     }
     if (length(parameters[["pl.nhclcont"]])>0) {
@@ -420,14 +430,15 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
         counter <- counter + 1
       }
     }
-
     pl.cat <- catnames[parameters[["pl.ind"]][(1+nrcont):(nrcat+nrcont)]]
+    # check that mus are not in correlation structure
     if (any(!is.na(pl.cat))) {
       for (i in pl.cat){
-        bf <- c(bf,dt.scaled(0,1,0,scalecat)/(dnorm(0, mean(b_post[,paste0("mu",i)]), sd(b_post[,paste0("mu",i)]))+1e-300))
-        bf.names<-c(bf.names,i)
-        # bf <- c(bf,dt.scaled(0,1,0,scalecat)/(dnorm(0, mean(b_post[,paste0("mu",pl.cat)]), sd(b_post[,paste0("mu",pl.cat)]))+1e-300))
-        counter <- counter + 1
+        if(length(grep(paste0("\\bmu",i,"\\b"),names(b_post),value = TRUE))>0){
+          bf <- c(bf,dt.scaled(0,1,0,scalecat)/(dnorm(0, mean(b_post[,paste0("mu",i)]), sd(b_post[,paste0("mu",i)]))+1e-300))
+          bf.names<-c(bf.names,i)
+          counter <- counter + 1
+        }
       }
     }
     if (length((parameters[["pl.nhclcat"]]))) {

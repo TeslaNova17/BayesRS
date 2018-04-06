@@ -183,7 +183,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   if (nrcat > 0){
     for (ncat in 1:nrcat){
       onlyfix <- 0
-      # random slopes for continuous predictors
+      # random slopes for categorical predictors
       if(cathcl[ncat] == 1){
         # nrs <- which(dat.str[dat.str$type == "cat",][ncat,3:ncol(dat.str)]==1)
         # nrs <- unique(which(as.matrix(dat.str[dat.str$type == "cat",][,3:ncol(dat.str)]==1),arr.ind = TRUE)[,2])
@@ -237,7 +237,8 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   }else{bcat <- rm(bcat); mucat <- list(NA, NA); precat <- rm(precat); taucat <- rm(taucat); sigmacat <- rm(sigmacat) }
   pl.pre <- rbind(pl.pre, catcount)
 
-  pl.ind <- rowSums(pl.pre) == nrand
+  # pl.ind <- rowSums(pl.pre) == nrand
+  pl.ind <- rowSums(pl.pre) > 0
   # covariance structure if required
   bi.yes <- which(lapply(bivar,length)>0)
   multi.yes <- which(lapply(multivar, length)>0)
@@ -345,7 +346,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
     for (ncont in 1:(nrcont+nrcat-1)){
       for (ncat in (ncont+1):(nrcont+nrcat)){
         counter <- counter + 1
-        # 
+        #
         if(sum(startsWith(x = c(allnames[ncont],allnames[ncat]), prefix = substr(allnames[ncont],start = 1, stop = nchar(allnames[ncont])-1)))==2 &
            grepl(pattern=".spl",x=allnames[ncont]) & grepl(pattern=".spl",x=allnames[ncat])){
         }else{
@@ -369,7 +370,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
         }
         if(ncont<=nrcont&ncat<=nrcont){
           ia.purecont<-c(ia.purecont,1)
-          } else{ia.purecont<-c(ia.purecont,0)}
+        } else{ia.purecont<-c(ia.purecont,0)}
       }}
     preIAs <- preIAs[2:length(preIAs)]
   } else{muIAs <- rm(muIAs); preIAs <- rm(preIAs); tauIAs <- rm(tauIAs); sigmaIAs <- rm(sigmaIAs)}
@@ -446,14 +447,14 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   for (i in which(conthcl==1)){
     for (j in which(dat.str[dat.str$type == "cont",][i,3:ncol(dat.str)]==1)){
       if (all(multivar[[j]]!=(1+i)) & all(bivar[[j]]!=(1+i))){
-        MU[[j]] <- append(MU[[j]], mucont[[2]])
+        MU[[j]] <- append(MU[[j]], mucont[[2]][i])
       }
     }
   }
   for (i in which(cathcl==1)){
     for (j in which(dat.str[dat.str$type == "cat",][i,3:ncol(dat.str)]==1)){
       if (all(multivar[[j]]!=(1+sum(conthcl)+i)) & all(bivar[[j]]!=(1+sum(conthcl)+i))){
-        MU[[j]] <- append(MU[[j]], mucat[[2]])
+        MU[[j]] <- append(MU[[j]], mucat[[2]][i])
       }
     }
   }
@@ -568,7 +569,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
         eff.mhyp <- append(eff.mhyp, paste(muIAs[[2]][i], " <- ", preIAs[i], "* scalecat \n", sep = ""))
       } else if(ia.purecont[i]==1){
         eff.mhyp <- append(eff.mhyp, paste(muIAs[[2]][i], " <- ", preIAs[i], "* scalecont \n", sep = ""))
-        }
+      }
     }}
   for (j in 1:nrand){
     for (k in which(randvar.ia[[j]][lower.tri(randvar.ia[[j]])]==1)){
@@ -614,8 +615,8 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   options(warn=0)
   parameters <- list(MU = MU.INT, SIGMA = unlist(SIGMA), b.save = mcmcsave)
   parameters[["pl.ind"]] <- pl.ind
-  parameters[["pl.nhclcont"]] <- mucont[[2]][nhclcont]
-  parameters[["pl.nhclcat"]] <- mucat[[2]][nhclcat]
+  parameters[["pl.nhclcont"]] <- mucont[[2]][as.logical(nhclcont)]
+  parameters[["pl.nhclcat"]] <- mucat[[2]][as.logical(nhclcat)]
   if (!is.na(RHO[1])){
     parameters[["RHO"]] <- unlist(RHO)
     parameters[["mu.corr"]] <- mucorr
