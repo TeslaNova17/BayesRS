@@ -456,7 +456,7 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
     } else{nrIA <- (length(catnames)+length(contnames)-1)*(length(catnames)+length(contnames))/2}
     if (nrIA > 0) {
       for (k in 1:(nrIA)){
-        bf <- c(bf,dt.scaled(0,1,0,scalecat)/(dnorm(0, mean(b_post[,counter]), sd(b_post[,counter])))+1e-300)
+        bf <- c(bf,dt.scaled(0,1,0,scalecat)/(dnorm(0, mean(b_post[,k]), sd(b_post[,k])))+1e-300)
         bf.names<-c(bf.names,names(b_post)[counter])
         counter <- counter + 1
       }
