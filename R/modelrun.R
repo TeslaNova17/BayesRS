@@ -459,7 +459,7 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
     if (nrIA > 0) {
       for (k in 1:(nrIA)){
         bf <- c(bf,dt.scaled(0,1,0,scalecat)/(dnorm(0, mean(b_post[,k]), sd(b_post[,k])))+1e-300)
-        bf.names<-c(bf.names,names(b_post)[counter])
+        bf.names<-c(bf.names,names(b_post)[k])
         counter <- counter + 1
       }
     }
@@ -467,6 +467,7 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
     bf1 <- prettyNum(bf, digits = 2)
     bf.names<-bf.names[2:length(bf.names)]
     bf.tog1<-data.frame(bf.names,bf=bf1)
+    
     if(isTRUE(plotting.bfs==1)){
     # plotting of 95% hdis with respective bfs
     plot.bs <- melt(b_post,id.vars = NULL)
@@ -476,7 +477,8 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
     plot.bs$varnames <- factor(plot.bs$varnames)
     pl.post <- plotPostMT_HDImeans2(plot.bs, xlab="" , ylab = "Parameter Estimate\n", main="",
                                     ylim = c(min(plot.bs$samples)-.1, max(plot.bs$samples)+.1),
-                                    showHDI = 1, colflag = 1, bfs = bf1, bfpos = min(plot.bs$samples))}
+                                    showHDI = 1, colflag = 1, bfs = bf1, bfpos = min(plot.bs$samples))
+    }
     if(plot.post==1){
       dev.new()
       grid.draw(pl.post)} # n.b. posteriors are in z-transformed space
