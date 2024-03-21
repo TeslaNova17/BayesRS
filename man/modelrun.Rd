@@ -6,7 +6,7 @@
 \usage{
 modelrun(data, dv, dat.str, randvar.ia = NULL, corstr = NULL,
   nadapt = NULL, nburn = NULL, nsteps = NULL, checkconv = NULL,
-  mcmc.save.indiv = NULL, plot.post = NULL, dic = NULL, path = NULL)
+  mcmc.save.indiv = NULL, plot.post = NULL,plotting.bfs=NULL, dic = NULL, path = NULL)
 }
 \arguments{
 \item{data}{a \code{data.frame} object with the data to be fitted in the long format.}
@@ -30,7 +30,7 @@ modelrun(data, dv, dat.str, randvar.ia = NULL, corstr = NULL,
 \item{mcmc.save.indiv}{indicates that the chains should be saved in a \code{data.frame} object when set to 1 (0 by default).}
 
 \item{plot.post}{indicates that the 95 percent highest-density interval of the posterior of the group parameters should be plotted as a figure with the corresponding Bayes Factors when set to 1 (0 by default).}
-
+\item{plotting.bfs} {just tryna turn off these plots}
 \item{dic}{indicates that the deviation information criterion (Spiegelhalter, Best, Carlin, & Linde, 2002) should be computed for a given model when set to 1 (0 by default).}
 
 \item{path}{defines directory where model is saved as .txt file and model name. Is set to file.path(tempdir(), "model.txt") by default.}
