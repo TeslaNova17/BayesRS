@@ -12,6 +12,7 @@
 #' @param checkconv indicates that convergence statistics of the main model parameters should be returned in the console and that figures of the chains should be plotted when set to 1 (0 by default).
 #' @param mcmc.save.indiv indicates that the chains should be saved in a \code{data.frame} object when set to 1 (0 by default).
 #' @param plot.post indicates that the 95 percent highest-density interval of the posterior of the group parameters should be plotted as a figure with the corresponding Bayes Factors when set to 1 (0 by default).
+#' @param plotting.bfs just tryna turn off these plots
 #' @param dic indicates that the deviation information criterion (Spiegelhalter, Best, Carlin, & Linde, 2002) should be computed for a given model when set to 1 (0 by default).
 #' @param path defines directory where model is saved as .txt file and model name. Is set to file.path(tempdir(), "model.txt") by default.
 #' @details The argument \code{corstr} can be used to model correlations between (a) pairs of predictors and (b) more than two predictors. When both is done within the same random variable, a predictor can only appear in (a) or (b).
@@ -48,13 +49,14 @@
 
 
 modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt = NULL, nburn = NULL, nsteps = NULL,
-                     checkconv = NULL, mcmc.save.indiv = NULL, plot.post = NULL ,dic = NULL,path=NULL){
+                     checkconv = NULL, mcmc.save.indiv = NULL, plot.post = NULL , plotting.bfs=NULL ,dic = NULL,path=NULL){
   if (is.null(nadapt) ) nadapt=2000
   if (is.null(nburn) ) nburn=2000
   if (is.null(nsteps) ) nsteps=100000
   if (is.null(checkconv) ) checkconv=1
   if (is.null(mcmc.save.indiv)) mcmc.save.indiv = 0
   if (is.null(plot.post)) plot.post=0
+  if (is.null(plotting.bfs)) plotting.bfs=0
   if (is.null(dic)) dic=0
   if (is.null(path)) path=file.path(tempdir(), "model.txt")
   if (!is.null(randvar.ia)){
@@ -465,6 +467,7 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
     bf1 <- prettyNum(bf, digits = 2)
     bf.names<-bf.names[2:length(bf.names)]
     bf.tog1<-data.frame(bf.names,bf=bf1)
+    if(isTRUE(plotting.bfs==1)){
     # plotting of 95% hdis with respective bfs
     plot.bs <- melt(b_post,id.vars = NULL)
     names(plot.bs) <- c("classify", "samples")
@@ -473,7 +476,7 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
     plot.bs$varnames <- factor(plot.bs$varnames)
     pl.post <- plotPostMT_HDImeans2(plot.bs, xlab="" , ylab = "Parameter Estimate\n", main="",
                                     ylim = c(min(plot.bs$samples)-.1, max(plot.bs$samples)+.1),
-                                    showHDI = 1, colflag = 1, bfs = bf1, bfpos = min(plot.bs$samples))
+                                    showHDI = 1, colflag = 1, bfs = bf1, bfpos = min(plot.bs$samples))}
     if(plot.post==1){
       dev.new()
       grid.draw(pl.post)} # n.b. posteriors are in z-transformed space
