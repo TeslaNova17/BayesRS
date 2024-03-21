@@ -1,7 +1,8 @@
+#Updated logical arguments 
 # function to write required jags model as a text file
 
 modeltext = function(dat.str, randvar.ia, corstr,path){
-
+  
   cont <- as.character(dat.str$iv[dat.str$type == "cont"])
   cat <- as.character(dat.str$iv[dat.str$type == "cat"])
   if (length(randvar.ia) == 1){
@@ -13,9 +14,9 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
     conthcl.pre <- cont[any(dat.str[dat.str$type == "cont",3:ncol(dat.str)]>0)] # as.logical was rowSums before
     cathcl.pre <- cat[any(dat.str[dat.str$type == "cat",3:ncol(dat.str)]>0)] # as.logical was rowSums before
   }
-
+  
   randvar <- names(dat.str[3:ncol(dat.str)])
-
+  
   allnames <- c(cont, cat)
   conthcl <- as.numeric(cont == conthcl.pre)
   cathcl <- as.numeric(cat == cathcl.pre)
@@ -37,14 +38,14 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   precat <- matrix()
   preIAs <- matrix()
   pl.pre<-numeric()
-
+  
   taucont <- matrix(NA, nrow = nrcont, ncol = nrand)
   taucat <- matrix(NA, nrow = nrcat, ncol = nrand)
   tauIAs <- matrix(NA, nrow = nrIA, ncol = nrand)
   sigmacont <- matrix(NA, nrow = nrcont, ncol = nrand)
   sigmacat <- matrix(NA, nrow = nrcat, ncol = nrand)
   sigmaIAs <- matrix(NA, nrow = nrIA, ncol = nrand)
-
+  
   # correlation between random variables: matrices of what order?
   multivar <- rep(list(NULL),nrand)
   bivar <- rep(list(NULL),nrand)
@@ -67,7 +68,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       } else { multivar[i] <- list(NULL)}
     }
   }
-
+  
   tau0g<- vector("list",nrand)
   sigma0<-vector("list",nrand)
   mu0g <- vector("list",nrand)
@@ -77,7 +78,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       sigma0[[i]] <- paste("sigma0", ".", randvar[i], sep = '')
     }
   }
-
+  
   bimultivar <- mapply(cbind,multivar,bivar,SIMPLIFY=FALSE)
   ind<-lapply(bimultivar,function(x)sum(x==1))
   for(i in 1:length(multivar)){
@@ -89,7 +90,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       mu0g[[i]]<-"mu0g"
     }
   }
-
+  
   # random intercept
   for (i in 1:nrand){
     corrcount <- 0
@@ -106,7 +107,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
         bI[[i]][[2]] <- paste("b", randvar[i], paste(multivar[[i]][tmp,], collapse = ''),  "[n", ",", corrcount, "]", sep = '')
         bI[[i]][[3]] <- paste("b", randvar[i], paste(multivar[[i]][tmp,], collapse = ''), sep = '')
       }
-
+      
       if (any(bivar[[i]] == 1)){
         tmp <- which(bivar[[i]]==1 ,arr.ind = TRUE)[1]
         corrcount <- corrcount + 1
@@ -117,11 +118,11 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       }
     }
   }
-
+  
   # where are the intercepts?
   tmp.multi<-unlist(lapply(multivar,FUN=function(x)sum(x==1)))
   tmp.bi<-unlist(lapply(bivar,FUN=function(x)sum(x==1)))
-
+  
   corrcount <- matrix(c(tmp.multi,tmp.bi),byrow = TRUE,nrow = 2)
   # random slopes and group parameters
   contcount <- matrix(0,nrow = nrcont, ncol = nrand)
@@ -129,7 +130,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   if (nrcont > 0){
     for (ncont in 1:nrcont){
       onlyfix <- 0
-      if(conthcl[ncont] == 1){
+      if(isTRUE(conthcl[ncont] == 1)){
         for (i in which(dat.str[dat.str$type == "cont",][ncont,3:ncol(dat.str)]==1)){
           if (all(multivar[[i]]!=1+ncont) & all(bivar[[i]]!=1+ncont)){
             bcont[[ncont]][i,1] <- paste("b", cont[ncont], ".", randvar[i],"[", randvar[i],"[i]]",
@@ -161,7 +162,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
         mucont[[2]][[ncont]] <- paste("mu", cont[ncont], sep = "")
         # plus pre for rescaling as cauchy
         precont[[ncont]] <- paste("pre", cont[ncont], sep = "")
-        if (conthcl[ncont]!=1){nhclcont[ncont] <- 1}
+        if (isFALSE(conthcl[ncont]!=1)){nhclcont[ncont] <- 1}
         for (i in which(dat.str[dat.str$type == "cont",][ncont,3:ncol(dat.str)]==1)){
           taucont[ncont,i] <- paste("tau", cont[ncont], ".", randvar[i], sep = "")
           # plus sigma for rescaling prec as sd
@@ -184,7 +185,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
     for (ncat in 1:nrcat){
       onlyfix <- 0
       # random slopes for categorical predictors
-      if(cathcl[ncat] == 1){
+      if(isTRUE(cathcl[ncat] == 1)){
         # nrs <- which(dat.str[dat.str$type == "cat",][ncat,3:ncol(dat.str)]==1)
         # nrs <- unique(which(as.matrix(dat.str[dat.str$type == "cat",][,3:ncol(dat.str)]==1),arr.ind = TRUE)[,2])
         # for (i in nrs){
@@ -219,7 +220,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
         mucat[[2]][[ncat]] <- paste("mu", cat[ncat], sep = "")
         # plus pre for rescaling as cauchy
         precat[[ncat]] <- paste("pre", cat[ncat], sep = "")
-        if (cathcl[ncat]!=1){nhclcat[ncat] <- 1}
+        if (isFALSE(cathcl[ncat]!=1)){nhclcat[ncat] <- 1}
         for (i in which(dat.str[dat.str$type == "cat",][ncat,3:ncol(dat.str)]==1)){
           taucat[ncat,i] <- paste("tau", cat[ncat], ".", randvar[i], sep = "")
           # plus sigma for rescaling prec as sd
@@ -236,13 +237,13 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
     }
   }else{bcat <- rm(bcat); mucat <- list(NA, NA); precat <- rm(precat); taucat <- rm(taucat); sigmacat <- rm(sigmacat) }
   pl.pre <- rbind(pl.pre, catcount)
-
+  
   # pl.ind <- rowSums(pl.pre) == nrand
   pl.ind <- rowSums(pl.pre) > 0
   # covariance structure if required
   bi.yes <- which(lapply(bivar,length)>0)
   multi.yes <- which(lapply(multivar, length)>0)
-
+  
   multipart <- replicate(nrand, matrix(NA,nrow = (max(lengths(multivar))), ncol = 1), simplify=F)
   bipart <- replicate(nrand, matrix(NA,nrow = (max(lengths(bivar))/2), ncol = 1), simplify=F)
   # multivar<-lapply(multivar,function(x)as.matrix(x))
@@ -267,14 +268,14 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   }
   bipart <- lapply(bipart, function(x) x[!is.na(x)])
   multipart <- lapply(multipart, function(x) x[!is.na(x)])
-
+  
   mupart.corr <- NA
   pre.corr <- NA
   sigmainv.corr <- NA
   sigma.corr <- NA
   wishdf <- NA
   corr.names<-NA
-
+  
   for (both in union(unique(unlist(multivar)),unique(unlist(bivar)))){
     if (both == 1){
       mupart.corr <- append(mupart.corr, paste("mu.corr[", both, "] ~ dnorm(0,1)","\n", sep = ""))
@@ -334,7 +335,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       }
     }
   }
-
+  
   sigmainv.corr <- sigmainv.corr[!is.na(sigmainv.corr)]
   sigma.corr <- sigma.corr[!is.na(sigma.corr)]
   wishdf <- wishdf[!is.na(wishdf)]
@@ -356,13 +357,13 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
                                             " * x", allnames[ncont], "[i]"," * x", allnames[ncat], "[i]", sep = "")
               bIAs[[counter]][i,2] <- paste("b", allnames[ncont], "x", allnames[ncat], ".", randvar[i], "[n]", sep = "")
               bIAs[[counter]][i,3] <- paste("b", allnames[ncont], "x", allnames[ncat], ".", randvar[i], sep = "")
-
+              
               tauIAs[counter,i] <- paste("tau", allnames[ncont], "x", allnames[ncat], ".", randvar[i], sep = "")
               # plus sigma for rescaling prec as sd
               sigmaIAs[counter,i] <- paste("sigma", allnames[ncont], "x", allnames[ncat], ".", randvar[i], sep = "")
             } else {muIAs[[1]][[counter]] <- paste("mu", allnames[ncont],"x", allnames[ncat], " * x",
                                                    allnames[ncont],"[i]", " * x", allnames[ncat],"[i]", sep = "")}
-
+            
             muIAs[[2]][counter]<- paste("mu", allnames[ncont], "x", allnames[ncat], sep = "")
             # preIAs <- append(preIAs, paste("pre", allnames[ncont], "x", allnames[ncat],  sep = ""))
           }
@@ -374,7 +375,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       }}
     preIAs <- preIAs[2:length(preIAs)]
   } else{muIAs <- rm(muIAs); preIAs <- rm(preIAs); tauIAs <- rm(tauIAs); sigmaIAs <- rm(sigmaIAs)}
-
+  
   ## assign text for regression formula
   eqparms <- NA
   B <- vector("list", nrand)
@@ -384,7 +385,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       B[[i]] <- append(B[[i]], bI[[i]][2])
     }
   }
-
+  
   # assign random cont effects
   for (i in which(conthcl==1)){
     for (j in which(dat.str[dat.str$type == "cont",][i,3:ncol(dat.str)]==1)){
@@ -397,7 +398,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   for (i in which(conthcl==0)){
     eqparms <- append(eqparms, mucont[[1]][i])
   }
-
+  
   # same for cat and ia effects
   for (i in which(cathcl==1)){
     for (j in which(dat.str[dat.str$type == "cat",][i,3:ncol(dat.str)]==1)){
@@ -416,7 +417,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       B[[j]] <- append(B[[j]], bIAs[[i]][j,2])
     }
   }
-
+  
   sums <- matrix(0, nrow = nrow(randvar.ia[[1]]), ncol = ncol(randvar.ia[[1]]))
   for (i in 1:nrand){
     sums <- sums + randvar.ia[[i]]
@@ -426,13 +427,13 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
     eqparms <- append(eqparms, muIAs[[1]][i])
   }
   eqparms <- eqparms[!is.na(eqparms)]
-
+  
   # split up individual effects according to random grouping variable
   TAU <- vector("list", nrand)
   SIGMA <- vector("list", nrand)
   MU <- vector("list", nrand)
   PRE <- vector("list", nrand)
-
+  
   for (i in 1:nrand){
     TAU[[i]] <- c(tau0g[[i]], taucont[,i], taucat[,i],
                   tauIAs[which(randvar.ia[[i]][lower.tri(randvar.ia[[i]])]==1),i])
@@ -441,9 +442,9 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
                     sigmaIAs[which(randvar.ia[[i]][lower.tri(randvar.ia[[i]])]==1),i])
     SIGMA[[i]] <- SIGMA[[i]][!is.na(SIGMA[[i]])]
   }
-
+  
   MU<-mu0g
-
+  
   for (i in which(conthcl==1)){
     for (j in which(dat.str[dat.str$type == "cont",][i,3:ncol(dat.str)]==1)){
       if (all(multivar[[j]]!=(1+i)) & all(bivar[[j]]!=(1+i))){
@@ -470,13 +471,13 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
   # text modules for jags model text
   likelihood <- paste("y[i] ~ dnorm( mu[i], tau )\n")
   regeq <- paste(regeq[2:(length(regeq)-2)], collapse = '')
-
+  
   part1 <- paste("for ( i in 1:Ndata ) {\n", likelihood, "mu[i] <- ", regeq,"\n}")
-
+  
   eff.rand <- vector("list", nrand)
   part2 <- replicate(nrand, 0, simplify=F)
-
-
+  
+  
   for (i in 1:length(B)){
     if(!is.null(B[[i]])){
       for (j in 1:length(B[[i]])){
@@ -496,17 +497,17 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
     mucont[[i]] <- c(NA,mucont[[i]][!grepl("corr", mucont[[i]])])
     mucat[[i]] <- c(NA, mucat[[i]][!grepl("corr", mucat[[i]])])
   }
-
+  
   mucorr <- unique(unlist(lapply(mucorr, function(x) x[!is.na(x)])))
   MU <- lapply(MU, function(x) x[!is.na(x)])
-
+  
   mucont <- lapply(mucont, function(x) x[!is.na(x)])
   mucat <- lapply(mucat, function(x) x[!is.na(x)])
-
+  
   PRE <- c(precont, precat, preIAs)
   PRE <- PRE[!is.na(PRE)]
   MU.INT <- c(mu0g, mucont[[2]], mucat[[2]], muIAs[[2]]) #, "mu.corr"
-
+  
   for (i in 1:length(bipart)){
     if (length(bipart[[i]])>0){
       for (j in 1:length(bipart[[i]])){
@@ -520,7 +521,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       }}
     part2[[i]] <- append(part2[[i]], " }")}
   part2 <- paste(append(unlist(part2), "tau ~ dgamma(sg, rg)\n"), collapse = '')
-
+  
   # now write mu priors
   eff.tauhyp <- NA
   eff.sigmahyp <- NA
@@ -535,12 +536,12 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
       eff.sigmahyp <- append(eff.sigmahyp, paste(sigma0[i], " ~ dgamma(1,0.04)\n"))
     }
   }
-
+  
   if (length(mucont[[2]])>0){
     for (i in 1:length(mucont[[2]])){
       eff.mhyp <- append(eff.mhyp, paste(mucont[[2]][i], " <- ", precont[i], "* scalecont \n"))
     }}
-
+  
   for (i in 1:nrand){
     for (j in which(dat.str[dat.str$type == "cont",][,2+i]==1)){
       if ((all(multivar[[i]]!=(1+j)) & all(bivar[[i]]!=(1+j)))){
@@ -552,7 +553,7 @@ modeltext = function(dat.str, randvar.ia, corstr,path){
     for (i in 1:length(mucat[[2]])){
       eff.mhyp <- append(eff.mhyp, paste(mucat[[2]][i], " <- ", precat[i], "* scalecat \n", sep = ""))
     }}
-
+  
   for (i in 1:nrand){
     for (j in which(dat.str[dat.str$type == "cat",][,2+i]==1)){
       if ((all(multivar[[i]]!=(1+nrcont+j)) & all(bivar[[i]]!=(1+nrcont+j)))){
