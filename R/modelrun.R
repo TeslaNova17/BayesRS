@@ -537,9 +537,11 @@ modelrun <- function(data, dv, dat.str, randvar.ia = NULL, corstr = NULL, nadapt
       levels(plot.bs$classify)<-bf.names
       plot.bs$varnames <- plot.bs$classify
       plot.bs$varnames <- factor(plot.bs$varnames)
+      if (isTRUE(plotting.bfs == 1)) {
       pl.post <- plotPostMT_HDImeans2(plot.bs, xlab="" , ylab = "Parameter Estimate\n", main="",
                                       ylim = c(min(plot.bs$samples)-.1, max(plot.bs$samples)+.1),
                                       showHDI = 1, colflag = 1, bfs = bf2, bfpos = min(plot.bs$samples))
+}
       if(plot.post==1){
         dev.new()
         grid.draw(pl.post)} # n.b. posteriors are in z-transformed space
